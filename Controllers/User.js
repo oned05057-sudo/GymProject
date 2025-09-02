@@ -366,11 +366,25 @@ async function getAllWorkOut(req, res) {
   }
 }
 
+async function getAllWorkOut2222(req, res) {
+  try {
+    const { userId } = req.userId;
+    const data = await prisma.workout.findMany({ userId: userId });
+    return res.status(200).json({
+      success: true,
+      data: data,
+    });
+  } catch (err) {
+    console.log(err.message);
+  }
+}
+
 export {
   createUser,
   deleteUser,
   getAllUsers,
   updateMeasurements,
   getAllWorkOut,
-  getUser
+  getUser,
+
 };
