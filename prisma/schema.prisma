@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+//All the fields are in camelCase age and date deleted
+
+//Model for the User data
+model User {
+  id             Int      @id @default(autoincrement())
+  date           String 
+  name           String
+  enrollmentId   String   @unique
+  whatsAppNumber String   @unique
+  email          String   @unique
+  gender         String
+  age            String?
+  DOB            String
+  address        String // Student : Hall; Teacher : Department
+  category       String // Student or Staff
+
+  guardianName      String
+  purpose           String
+  dietPreference    String
+  involvedInSports  String
+  experienceLevel   String
+  height            String
+  weight            String
+  chest             String
+  calf              String
+  biceps            String
+  thigh             String
+  waist             String
+  medicalConditions String
+  disciplineStatus  String
+  photoUrl          String
+  idCardUrl         String
+
+}
+
+//model to insert the workouts of the user
+
+model Workout {
+  id       Int          @id @default(autoincrement())
+  workoutId Int          //To count the number of workouts per preson
+  name     String       
+  bodyPart String
+  sets     Set[]
+  split    workoutSplit @relation(fields: [userId], references: [userId])
+  userId   String // enrollmentId of the user who created the workout 
+
+  @@unique([workoutId, userId])
+  @@unique([name, userId])
+}
+
+//model to define the sets for each user
+
+model Set {
+  id          Int          @id @default(autoincrement()) @unique
+  setNumber   Int
+  weight      Float
+  repetitions Int
+  workout     Workout      @relation(fields: [workoutId, userId], references: [workoutId, userId])
+  user        workoutSplit @relation(fields: [userId], references: [userId])
+  userId      String
+  workoutId   Int
+
+  @@unique([setNumber, workoutId, userId])
+}
+
+//model to relate the workout split to the user using the userId
+
+model workoutSplit {
+  id Int @id @default(autoincrement())
+  userId   String    @unique
+  Workouts Workout[] 
+  sets     Set[]
+}
+
+model Exercises {
+  id Int @id @default(autoincrement())
+  name String
+  bodyPart String
+}
