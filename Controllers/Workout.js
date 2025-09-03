@@ -167,7 +167,5 @@ async function createSet(req,res) {
     }
  }
 
- async function satya(req,res){
-    console.log("Hello Satya")
- }
+
 export { createWorkout, createSet, getWorkouts,getSets };
