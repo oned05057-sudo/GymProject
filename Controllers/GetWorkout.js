@@ -42,7 +42,7 @@ async function getLatestRoutine(req,res){
 
     console.log(routine);
 
-    res.status(200).json({
+    return res.status(200).json({
         success: true,
         message:"Routine fetched successfully",
         data: routine
@@ -83,7 +83,7 @@ async function getAllRoutine(req,res){
 
     console.log(routine);
 
-    res.status(200).json({
+    return res.status(200).json({
         success: true,
         message:"Routine fetched successfully",
         data: routine
@@ -91,5 +91,47 @@ async function getAllRoutine(req,res){
 }
 
 
+//================================================================ Users without routine ==========================================//
 
-export { getLatestRoutine, getAllRoutine };
+async function isRoutine(req,res){
+
+  try{
+
+    const usersWithoutRoutine = await prisma.userSplit.findMany({
+      where:{
+        routine:{
+          none:{}
+        }
+      }
+    })
+
+    if(usersWithoutRoutine.length === 0){
+
+      return res.status(200).json({
+        success: true,
+        message: "Routines of all the users are created"
+      })
+    }
+
+    console.log(usersWithoutRoutine);
+
+    return res.status(200).json({
+      success:true,
+      message:"Users fetched successfully",
+      data: usersWithoutRoutine
+    })
+
+  }catch(error){
+
+    console.log(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error while fetching the users"
+    })
+  }
+}
+
+
+
+export { getLatestRoutine, getAllRoutine, isRoutine };

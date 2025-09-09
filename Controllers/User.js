@@ -207,7 +207,7 @@ async function createUser(req, res) {
         })
 
         if(existingUser){
-            res.status(400).json({
+            return res.status(400).json({
                 success: false,
                 message: "User already resgistered"
             })
@@ -252,7 +252,7 @@ async function createUser(req, res) {
         })
 
         console.log(newUser, newSplit);
-        res.status(200).json({
+        return res.status(200).json({
             success:true,
             message: "User created successfully",
             data:newUser
@@ -260,7 +260,7 @@ async function createUser(req, res) {
 
     }catch(error){
         console.error("Error creating user:", error);
-        res.status(500).json({error: "Internal Server Error"});
+        return res.status(500).json({error: "Internal Server Error"});
     }
 }
 
@@ -276,7 +276,7 @@ async function getAllUsers(req,res){
 
     console.log(users);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message:"Users fetched successfully",
       data: users
@@ -286,7 +286,7 @@ async function getAllUsers(req,res){
 
     console.log(error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Internal server error while getting the users"
     })
