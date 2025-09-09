@@ -1,6 +1,8 @@
 import { PrismaClient, Prisma  } from "@prisma/client";
 import iconv from "iconv-lite";
 import fs, { existsSync } from "fs";
+import 'dotenv/config'
+
 
 const prisma = new PrismaClient();
 import Papa from "papaparse";
@@ -66,7 +68,7 @@ function parseCSV(file) {
   });
 }
 
-async function createUser(req, res) {
+async function createUser1(req, res) {
 
   try {
     const file = req.files.file;
@@ -173,218 +175,122 @@ async function createUser(req, res) {
   }
 }
 
-// ==================================================== Delete User ===================================================//
-async function deleteUser(req, res) {
-  const { enrollmentId } = req.body;
 
 
-    try{
 
-        const user = await prisma.user.findUnique({
+
+//================================================= Alok - Created User for postman entry ========================================//
+
+async function createUser(req, res) {
+
+    const {  name,date, email, gender, guardianName,age, purpose, category, enrollmentId, DOB, whatsAppNumber, dietPreference, address,
+        experienceLevel, height, weight, calf, medicalConditions, chest, biceps, thigh, waist, disciplineStatus, photoUrl, idCardUrl,involvedInSports
+     } = req.body;
+
+      //Validating all inputs
+        if(!name || !email || !gender || !guardianName || !age || !category || !purpose || !category || !enrollmentId || !DOB 
+            || !whatsAppNumber || !dietPreference || !address || !experienceLevel || !height || !medicalConditions || !waist || !weight 
+            || !chest || !biceps || !thigh || !disciplineStatus || !photoUrl || !idCardUrl || !involvedInSports
+        ){
+            res.status(400).json({
+                success: false,
+                message: "All fields required"
+            })
+        }
+
+    try {
+
+        const existingUser = await prisma.user.findUnique({
             where:{
                 enrollmentId
             }
         })
 
-        if(!user){
-            res.status(200).json({
+        if(existingUser){
+            res.status(400).json({
                 success: false,
-                message: "User does not exists"
+                message: "User already resgistered"
             })
         }
 
-        const deleteSet = await prisma.set.deleteMany({
-            where: {
+        const newUser = await prisma.user.create({
+            data: {
+                name,
+                date,
+                gender,
+                email,
+                guardianName,
+                age,
+                purpose,    
+                category,
+                enrollmentId,
+                DOB,
+                whatsAppNumber,
+                dietPreference, 
+                address,    
+                experienceLevel,
+                height,
+                weight,
+                medicalConditions,
+                chest,      
+                biceps, 
+                thigh, 
+                calf, 
+                waist,  
+                disciplineStatus,
+                photoUrl,
+                idCardUrl,
+                involvedInSports
+
+            }
+        })
+
+        const newSplit = await prisma.userSplit.create({
+            data: {
                 userId: enrollmentId
             }
         })
 
-        const deleteWorkout = await prisma.workout.deleteMany({
-            where: {
-                userId: enrollmentId
-            }
-        })
-
-        const deleteSplit = await prisma.workoutSplit.delete({
-            where: {
-                userId: enrollmentId
-            }
-        })
-
-        const deleteuser = await prisma.user.delete({
-            where: {
-                enrollmentId: enrollmentId
-            }
-        })
-
-    console.log(deleteUser);
-
-    res.status(200).json({
-      success: true,
-      message: "User deleted successfully",
-    });
-  } catch (error) {
-    console.error("Error deleting user:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Internal Server error deleting user",
-    });
-  }
-}
-
-// ==================================================== Get All Users ===================================================//
-async function getAllUsers(req, res) {
-  try {
-    const users = await prisma.user.findMany({});
-
-        if(!users){
-            res.status(400).json({
-                success: true,
-                message: "No users to display"
-            })
-        }
-
-    res.status(200).json({
-      success: true,
-      message: "Users fecthed successfully",
-      data: users,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Internal Server Error while fecthing the users",
-    });
-  }
-}
-
-
-//===================================================== Get Single User ================================================//
-
-async function getUser(req,res){
-
-    const { userId } = req.body;
-
-    if(!userId){
-        res.status(500).json({
-            success: false,
-            message:"All fields are required"
-        })
-    }
-
-    try{
-
-        const user = await prisma.user.findUnique({
-            where:{
-                enrollmentId : userId
-            }
-        })
-
-        if(!user){
-            res.status(400).json({
-                success: true,
-                message: "No user exists with this User Id"
-            })
-        }
-
-        console.log(user);
-
+        console.log(newUser, newSplit);
         res.status(200).json({
-            success: true,
-            message: "User fetched successfully",
-            data: user
+            success:true,
+            message: "User created successfully",
+            data:newUser
         })
-
 
     }catch(error){
-        console.log(error);
-
-        res.status(500).json({
-            success: false,
-            message: "Unable to fetch the user"
-        })
+        console.error("Error creating user:", error);
+        res.status(500).json({error: "Internal Server Error"});
     }
 }
 
 
-// ==================================================== Update User ===================================================//
-async function updateMeasurements(req, res) {
-  const {
-    enrollmentId,
-    height,
-    weight,
-    chest,
-    biceps,
-    thigh,
-    waist,
-    medicalConditions,
-  } = req.body;
 
-  try {
-    const updateUser = await prisma.user.update({
-      where: {
-        enrollmentId: enrollmentId,
-      },
-      data: {
-        height,
-        weight,
-        chest,
-        biceps,
-        thigh,
-        waist,
-        medicalConditions,
-      },
-    });
+//===================================================== Get All users =================================//
 
-    console.log(updateUser);
+async function getAllUsers(req,res){
+
+  try{
+
+    const users = await prisma.user.findMany({});
+
+    console.log(users);
 
     res.status(200).json({
       success: true,
-      mesaage: "User measurements updated successfully",
-      data: updateUser,
-    });
-  } catch (error) {
-    console.error("Error updating user measurements:", error);
+      message:"Users fetched successfully",
+      data: users
+    })
+
+  }catch(error){
+
+    console.log(error);
 
     res.status(500).json({
       success: false,
-      message: "Internal Server Error while updating the user measurements",
-    });
+      message: "Internal server error while getting the users"
+    })
   }
 }
 
-async function getAllWorkOut(req, res) {
-  try {
-    const { userId } = req.userId;
-    const data = await prisma.workout.findMany({ userId: userId });
-    return res.status(200).json({
-      success: true,
-      data: data,
-    });
-  } catch (err) {
-    console.log(err.message);
-  }
-}
-
-async function getAllWorkOut2222(req, res) {
-  try {
-    const { userId } = req.userId;
-    const data = await prisma.workout.findMany({ userId: userId });
-    return res.status(200).json({
-      success: true,
-      data: data,
-    });
-  } catch (err) {
-    console.log(err.message);
-  }
-}
-
-export {
-  createUser,
-  deleteUser,
-  getAllUsers,
-  updateMeasurements,
-  getAllWorkOut,
-  getUser,
-
-};
+export {createUser, getAllUsers}

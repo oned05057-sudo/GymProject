@@ -2,9 +2,15 @@ import express from "express";
 const app = express();
 const PORT = 4000;
 import cors from "cors";
+import fileUpload from "express-fileupload";
+
+// router import
 import userRouter from "./routes/User.js";
 import  workoutRouter from "./routes/Workout.js";
-import fileUpload from "express-fileupload";
+import getWorkoutRouter from "./routes/GetWorkout.js";
+
+
+
 
 //  =================================================== Home Route ===================================================//
 
@@ -25,11 +31,13 @@ app.get("/" , (req,res) => {
 app.use(cors());
 app.use(express.json());
 
-//  =================================================== User Routes ===================================================//
+//  =================================================== Routes ===================================================//
 
 app.use("/api/user", userRouter);
 
 app.use("/api/workout", workoutRouter);
+
+app.use("/api/getWorkout",getWorkoutRouter );
 
 
 
