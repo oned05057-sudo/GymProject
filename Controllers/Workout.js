@@ -1,17 +1,133 @@
 import { PrismaClient } from "@prisma/client"
+import 'dotenv/config'
+
 
 const prisma = new PrismaClient();
 
-// ==================================================== Update Workouts ===================================================//
+//============================================ Create Exercises ========================================================//
+
+async function createExercise(req,res){
+
+    const {name, bodyPart} = req.body;
+    
+    if(!name || !bodyPart){
+
+        res.status(403).json({
+            success: false,
+            message:"All fields are required"
+        })
+    }
 
 
-async function createWorkout(req,res) {
+    const existingExercise = await prisma.exercise.findFirst({
+        where:{
+            name,
+            bodyPart
+        }
+    })
 
-    const {workoutId,name, bodyPart, userId } = req.body;
+    if(existingExercise){
 
-    if(!workoutId || !name || !bodyPart || !userId){
+        res.status(403).json({
+            success: true,
+            message:"Exercise already exists"
+        })
+    }
+
+    try{
+
+        const exrcise = await prisma.exercise.create({
+            data:{
+                name,
+                bodyPart
+            }
+        })
+
+        console.log(exrcise);
+
+        res.status(200).json({
+            success: true,
+            message: "Exercise created successfully",
+            data: exrcise
+        })
+
+    }catch(error){
+        console.log(error)
 
         res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        })
+    }
+}
+
+
+//================================================= Create User Split ======================================//
+
+async function createUserSplit(req,res){
+
+    const {name , userId} = req.body;
+
+    if(!name, !userId){
+
+        res.status(403).json({
+            success: false,
+            message:"All fields are required"
+        })
+    }
+
+    try{
+
+        const existingSplit = await prisma.userSplit.findMany({
+            where:{
+                userId:userId
+            } 
+        });
+
+        if(existingSplit){
+
+            res.status(403).json({
+                success: false,
+                message: "User split already exists"
+            })
+        }
+
+        const userSplit = await prisma.userSplit.create({
+            data:{
+                name,
+                userId,
+            }
+        })
+
+        console.log(userSplit);
+
+        res.status(200).json({
+            success: true,
+            message: "User split created successfully",
+            data: userSplit
+        })
+
+    }catch(error){
+
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message:"Internal server error while creating split"
+        })
+    }
+
+}
+
+
+//========================================= Create Routine ==================================================//
+
+async function createRoutine(req,res){
+
+    const {name, userId} = req.body;
+
+    if(!name, !userId){
+
+        res.status(403).json({
             success: false,
             message: "All fields are required"
         })
@@ -19,153 +135,87 @@ async function createWorkout(req,res) {
 
     try{
 
-        const existingWorkout = await prisma.workout.findUnique({
-            where:{
-                userId: userId,
-                name: name
-            }
-        })
+        const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
-        if(existingWorkout){
-            res.status(403).json({
-                success: false,
-                message: `Workout ${name} already exists`
-            })
-        }
+        const daysData = daysOfWeek.map(name => name ?{name} : null)
+                         .filter(Boolean)
 
-        const createWorkout = await prisma.workout.create({
-            data:{
-                workoutId,
+        const routine = await prisma.routine.create({
+            data: {
                 name,
-                bodyPart,
-                split: {connect : {
-                    userId: userId
-                }}
-            }
-        })
-        console.log(createWorkout);
-
-        res.status(200).json({
-            success: true,
-            message: "Workout updated successfully",
-            data : createWorkout
-        })
-
-    }catch(error){
-
-        console.log(error)
-        res.status(500).json({
-            success: false,
-            message: "Internal Server error in updating workout"
-        })
-    }
-}
-
-
-// ==================================================== Get workouts ===================================================//
-
-async function getWorkouts(req,res) {
-
-    const { userId } = req.body;
-
-    try{
-
-        const workouts = await prisma.workout.findMany({
-            where: {
-                userId: userId
+                userId,
+                day: {
+                    create: daysData
+                }
+            },
+            include: {
+                day: true
             }
         })
 
-        console.log(workouts);
+        console.log(routine);
 
         res.status(200).json({
-            success: true,
-            message: "Workouts fetched successfully",
-            data: workouts
-        })
 
+            success: true,
+            message: "Rotine is created successfully"
+
+        })
     }catch(error){
 
         console.log(error);
+
         res.status(500).json({
             success: false,
-            message: "Internal Server error in fetching workouts"
+            message: "Error while creating the routine"
         })
-
     }
 }
 
+//========================================= Create the Workout ============================================//
 
+async function createWorkout(req,res){
 
-// ==================================================== Create sets ===================================================//
+    const {dayId, exerciseId, sets } = req.body;
 
-async function createSet(req,res) {
+    if(!dayId, !exerciseId, !sets){
 
-    console.log(req.body);
-
-    const {  setNumber,weight,repetitions,workoutId, userId } =req.body;
+        res.status(403).json({
+            success: false,
+            message: "All fields are required"
+        })
+    }
 
     try{
+        console.log(sets)
+        const workout = await prisma.workout.create({
 
-        const createSet = await prisma.set.create({
             data:{
-                repetitions,
-                weight,
-                setNumber,
-                workout : {connect: { workoutId_userId: {workoutId, userId}}},
-                user : {connect : {userId: userId}}
-
+                day: {connect: {id: dayId}},
+                exercise : {connect : {id: exerciseId}},
+                sets: {
+                    create: sets
+                }
             }
         })
 
-        console.log(createSet);
+        console.log(workout);
 
         res.status(200).json({
             success: true,
-            message: "Set created successfully",
-            data: createSet
+            message: "Workout created successfully"
         })
 
     }catch(error){
 
         console.log(error);
+
         res.status(500).json({
             success: false,
-            message: "Internal Server error in creating set"
-        })
-
-    }
- }
-
-
- //=================================================== Get all sets ===================================================//
-
- async function getSets(req,res){
-    const { workoutId, userId } = req.body;;
-
-    try{
-        const sets = await prisma.set.findMany({
-            where: {
-                workoutId: workoutId,
-                userId: userId
-            }
-        })
-
-        console.log(sets);
-
-        res.status(200).json({
-            success: true,
-            message: "Sets fetched successfully",
-            data: sets
-        })
-    }catch(error){
-        console.log(error);
-        res.status(500).json({
-            success: false,
-            message: "Internal Server error int fetching sets",
+            message: "Internal server error while creating workout"
         })
     }
- }
+}
 
 
-export { createWorkout, createSet, getWorkouts,getSets };
+export {createExercise, createUserSplit, createRoutine, createWorkout}
