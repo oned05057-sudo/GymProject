@@ -12,7 +12,7 @@ async function createExercise(req,res){
     
     if(!name || !bodyPart){
 
-        res.status(403).json({
+        return res.status(403).json({
             success: false,
             message:"All fields are required"
         })
@@ -28,7 +28,7 @@ async function createExercise(req,res){
 
     if(existingExercise){
 
-        res.status(403).json({
+        return res.status(403).json({
             success: true,
             message:"Exercise already exists"
         })
@@ -45,7 +45,7 @@ async function createExercise(req,res){
 
         console.log(exrcise);
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: "Exercise created successfully",
             data: exrcise
@@ -54,7 +54,7 @@ async function createExercise(req,res){
     }catch(error){
         console.log(error)
 
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: "Internal server error"
         })
@@ -70,7 +70,7 @@ async function createUserSplit(req,res){
 
     if(!name, !userId){
 
-        res.status(403).json({
+        return res.status(403).json({
             success: false,
             message:"All fields are required"
         })
@@ -101,7 +101,7 @@ async function createUserSplit(req,res){
 
         console.log(userSplit);
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: "User split created successfully",
             data: userSplit
@@ -110,7 +110,7 @@ async function createUserSplit(req,res){
     }catch(error){
 
         console.log(error);
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message:"Internal server error while creating split"
         })
@@ -127,7 +127,7 @@ async function createRoutine(req,res){
 
     if(!name, !userId){
 
-        res.status(403).json({
+        return res.status(403).json({
             success: false,
             message: "All fields are required"
         })
@@ -155,7 +155,7 @@ async function createRoutine(req,res){
 
         console.log(routine);
 
-        res.status(200).json({
+        return res.status(200).json({
 
             success: true,
             message: "Rotine is created successfully"
@@ -165,7 +165,7 @@ async function createRoutine(req,res){
 
         console.log(error);
 
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: "Error while creating the routine"
         })
@@ -180,7 +180,7 @@ async function createWorkout(req,res){
 
     if(!dayId, !exerciseId, !sets){
 
-        res.status(403).json({
+        return res.status(403).json({
             success: false,
             message: "All fields are required"
         })
@@ -201,7 +201,7 @@ async function createWorkout(req,res){
 
         console.log(workout);
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: "Workout created successfully"
         })
@@ -210,7 +210,7 @@ async function createWorkout(req,res){
 
         console.log(error);
 
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: "Internal server error while creating workout"
         })
