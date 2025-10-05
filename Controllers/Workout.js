@@ -8,9 +8,9 @@ const prisma = new PrismaClient();
 
 async function createExercise(req,res){
 
-    const {name, bodyPart} = req.body;
+    const {name, muscleGroup,equipment,description} = req.body;
     
-    if(!name || !bodyPart){
+    if(!name || !muscleGroup || !equipment){
 
         return res.status(403).json({
             success: false,
@@ -22,7 +22,7 @@ async function createExercise(req,res){
     const existingExercise = await prisma.exercise.findFirst({
         where:{
             name,
-            bodyPart
+            muscleGroup
         }
     })
 
@@ -39,7 +39,9 @@ async function createExercise(req,res){
         const exrcise = await prisma.exercise.create({
             data:{
                 name,
-                bodyPart
+                muscleGroup,
+                equipment,
+                description
             }
         })
 
@@ -123,7 +125,7 @@ async function createUserSplit(req,res){
 
 async function createRoutine(req,res){
 
-    const {name, userId} = req.body;
+    const {name, userId} = req.body;//name -> routine name
 
     if(!name, !userId){
 
@@ -217,5 +219,25 @@ async function createWorkout(req,res){
     }
 }
 
+async function getAllExercise(req,res){
+    try{
+        // console.log("I am in Exercise");
+        const response=await prisma.exercise.findMany({});
+        // console.log("After getting exercies")
+        return res.status(200).json({
+            success:true,
+            data:response,
+            message:"These are the exercises"
+        })
+    }
+    catch (err){
+        console.log("Error is",err)
+        return res.status(500).json({
+            success:false,
+            message:"Some error in get all exercise"
+        })
+    }
+}
 
-export {createExercise, createUserSplit, createRoutine, createWorkout}
+
+export {createExercise, createUserSplit, createRoutine, createWorkout,getAllExercise}

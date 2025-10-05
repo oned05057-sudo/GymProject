@@ -8,6 +8,7 @@ import fileUpload from "express-fileupload";
 import userRouter from "./routes/User.js";
 import  workoutRouter from "./routes/Workout.js";
 import getWorkoutRouter from "./routes/GetWorkout.js";
+import ownerRouter from "./routes/ownerRoute.js";
 
 
 
@@ -32,6 +33,7 @@ app.use(cors());
 app.use(express.json());
 
 //  =================================================== Routes ===================================================//
+app.use("/api/owner",ownerRouter);
 
 app.use("/api/user", userRouter);
 

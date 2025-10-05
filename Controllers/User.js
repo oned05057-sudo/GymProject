@@ -1,8 +1,7 @@
-import { PrismaClient, Prisma  } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import iconv from "iconv-lite";
 import fs, { existsSync } from "fs";
-import 'dotenv/config'
-
+import "dotenv/config";
 
 const prisma = new PrismaClient();
 import Papa from "papaparse";
@@ -68,8 +67,7 @@ function parseCSV(file) {
   });
 }
 
-async function createUser1(req, res) {
-
+async function createUser(req, res) {
   try {
     const file = req.files.file;
     if (!file) {
@@ -89,6 +87,8 @@ async function createUser1(req, res) {
       console.log(err.message);
     }
     // console.log("data is",data)
+    // console.log("Hey I am here ...")
+
     for (let i = 0; i < data.length; i++) {
       let frontendData = data[i];
       let {
@@ -117,10 +117,11 @@ async function createUser1(req, res) {
         idCardUrl,
         involvedInSports,
       } = transformData(frontendData, fieldMapping);
-      if (i == 8) { //6 
+      if (i == 15) {
+        //6
         break;
       }
-      try{
+      try {
         const newUser = await prisma.user.create({
           data: {
             name,
@@ -149,17 +150,25 @@ async function createUser1(req, res) {
             involvedInSports,
           },
         });
-      }
-      catch(error){
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        const newSplit = await prisma.userSplit.create({
+            data: {
+                userId: enrollmentId
+            }
+        })
+        // console.log(newUser, newSplit);
+
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === "P2002"
+        ) {
           console.log(`Skipping duplicate entry`);
           continue;
-        }
-        else{
+        } else {
           return res.status(402).json({
-            success:false,
-            message:error.message
-          })
+            success: false,
+            message: error.message,
+          });
         }
       }
       console.log("User is Inserted");
@@ -175,122 +184,117 @@ async function createUser1(req, res) {
   }
 }
 
-
-
-
-
 //================================================= Alok - Created User for postman entry ========================================//
 
-async function createUser(req, res) {
+// async function createUser(req, res) {
 
-    const {  name,date, email, gender, guardianName,age, purpose, category, enrollmentId, DOB, whatsAppNumber, dietPreference, address,
-        experienceLevel, height, weight, calf, medicalConditions, chest, biceps, thigh, waist, disciplineStatus, photoUrl, idCardUrl,involvedInSports
-     } = req.body;
+//     const {  name,date, email, gender, guardianName,age, purpose, category, enrollmentId, DOB, whatsAppNumber, dietPreference, address,
+//         experienceLevel, height, weight, calf, medicalConditions, chest, biceps, thigh, waist, disciplineStatus, photoUrl, idCardUrl,involvedInSports
+//      } = req.body;
 
-      //Validating all inputs
-        if(!name || !email || !gender || !guardianName || !age || !category || !purpose || !category || !enrollmentId || !DOB 
-            || !whatsAppNumber || !dietPreference || !address || !experienceLevel || !height || !medicalConditions || !waist || !weight 
-            || !chest || !biceps || !thigh || !disciplineStatus || !photoUrl || !idCardUrl || !involvedInSports
-        ){
-            res.status(400).json({
-                success: false,
-                message: "All fields required"
-            })
-        }
+//       //Validating all inputs
+//         if(!name || !email || !gender || !guardianName || !age || !category || !purpose || !category || !enrollmentId || !DOB
+//             || !whatsAppNumber || !dietPreference || !address || !experienceLevel || !height || !medicalConditions || !waist || !weight
+//             || !chest || !biceps || !thigh || !disciplineStatus || !photoUrl || !idCardUrl || !involvedInSports
+//         ){
+//             res.status(400).json({
+//                 success: false,
+//                 message: "All fields required"
+//             })
+//         }
 
-    try {
+//     try {
 
-        const existingUser = await prisma.user.findUnique({
-            where:{
-                enrollmentId
-            }
-        })
+//         const existingUser = await prisma.user.findUnique({
+//             where:{
+//                 enrollmentId
+//             }
+//         })
 
-        if(existingUser){
-            return res.status(400).json({
-                success: false,
-                message: "User already resgistered"
-            })
-        }
+//         if(existingUser){
+//             res.status(400).json({
+//                 success: false,
+//                 message: "User already resgistered"
+//             })
+//         }
 
-        const newUser = await prisma.user.create({
-            data: {
-                name,
-                date,
-                gender,
-                email,
-                guardianName,
-                age,
-                purpose,    
-                category,
-                enrollmentId,
-                DOB,
-                whatsAppNumber,
-                dietPreference, 
-                address,    
-                experienceLevel,
-                height,
-                weight,
-                medicalConditions,
-                chest,      
-                biceps, 
-                thigh, 
-                calf, 
-                waist,  
-                disciplineStatus,
-                photoUrl,
-                idCardUrl,
-                involvedInSports
+//         const newUser = await prisma.user.create({
+//             data: {
+//                 name,
+//                 date,
+//                 gender,
+//                 email,
+//                 guardianName,
+//                 age,
+//                 purpose,
+//                 category,
+//                 enrollmentId,
+//                 DOB,
+//                 whatsAppNumber,
+//                 dietPreference,
+//                 address,
+//                 experienceLevel,
+//                 height,
+//                 weight,
+//                 medicalConditions,
+//                 chest,
+//                 biceps,
+//                 thigh,
+//                 calf,
+//                 waist,
+//                 disciplineStatus,
+//                 photoUrl,
+//                 idCardUrl,
+//                 involvedInSports
 
-            }
-        })
+//             }
+//         })
 
-        const newSplit = await prisma.userSplit.create({
-            data: {
-                userId: enrollmentId
-            }
-        })
+//         const newSplit = await prisma.userSplit.create({
+//             data: {
+//                 userId: enrollmentId
+//             }
+//         })
 
-        console.log(newUser, newSplit);
-        return res.status(200).json({
-            success:true,
-            message: "User created successfully",
-            data:newUser
-        })
+//         console.log(newUser, newSplit);
+//         res.status(200).json({
+//             success:true,
+//             message: "User created successfully",
+//             data:newUser
+//         })
 
-    }catch(error){
-        console.error("Error creating user:", error);
-        return res.status(500).json({error: "Internal Server Error"});
-    }
-}
-
-
+//     }catch(error){
+//         console.error("Error creating user:", error);
+//         res.status(500).json({error: "Internal Server Error"});
+//     }
+// }
 
 //===================================================== Get All users =================================//
 
-async function getAllUsers(req,res){
-
-  try{
-
+async function getAllUsers(req, res) {
+  try {
     const users = await prisma.user.findMany({});
-
-    console.log(users);
+    // console.log("Hey i am here ")
+    if(!users){
+      return res.status(404).json({
+        success:false,
+        message:"No data found"
+      })
+    }
 
     return res.status(200).json({
       success: true,
-      message:"Users fetched successfully",
-      data: users
-    })
-
-  }catch(error){
-
+      message: "Users fetched successfully",
+      data: users,
+    });
+  } catch (error) {
     console.log(error);
 
     return res.status(500).json({
       success: false,
-      message: "Internal server error while getting the users"
-    })
+      message: "Internal server error while getting the users",
+    });
   }
 }
 
-export {createUser, getAllUsers}
+export { createUser, getAllUsers };
