@@ -20,6 +20,17 @@ datasource db {
 
 //All the fields are in camelCase age and date deleted
 
+//Here this table for the owner data
+
+model Owner {
+  id             Int    @id @default(autoincrement())
+  name           String
+  email          String @unique
+  phNumber       String    @unique
+  password       String @unique
+}
+
+
 //Model for the User data
 model User {
   id             Int     @id @default(autoincrement())
@@ -28,7 +39,7 @@ model User {
   enrollmentId   String  @unique
   whatsAppNumber String  @unique
   email          String  @unique
-  gender         String
+  gender         String? @default("Not Mention")
   age            String?
   DOB            String
   address        String // Student : Hall; Teacher : Department
@@ -63,7 +74,9 @@ model userSplit {
 model Exercise {
   id       Int       @id @default(autoincrement())
   name     String     @unique
-  bodyPart String
+  muscleGroup String
+  equipment String
+  description String
   workouts Workout[]
 
 
@@ -80,6 +93,7 @@ model Workout {
 
 model Set {
   id          Int     @id @default(autoincrement())
+  setNo       Int
   workoutId   Int
   weight      Float
   repetitions Int

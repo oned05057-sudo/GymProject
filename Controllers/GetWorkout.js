@@ -22,22 +22,22 @@ async function getLatestRoutine(req,res){
           id:"desc"
         }, 
         include: {
-    day: {
-      include: {
-        workouts: {
-          include: {
-            exercise:{
-                select:{
-                    name: true,
-                    bodyPart: true,
+          day: {
+            include: {
+              workouts: {
+                include: {
+                  exercise:{
+                      select:{
+                          name: true,
+                          bodyPart: true,
+                      }
+                  },
+                  sets: true
                 }
-            },
-            sets: true
+              }
+            }
           }
         }
-      }
-    }
-  }
     })
 
     console.log(routine);
@@ -89,6 +89,9 @@ async function getAllRoutine(req,res){
         data: routine
     })
 }
+
+//TODO
+//Write a function in which this gives all the users active routine means all the users latest active routines
 
 
 
