@@ -40,7 +40,7 @@ const singUp=async(req,res)=>{
       }
     })
     console.log(ownerDetail);
-    res.status(202).json({
+    res.status(200).json({
       success:true,
       message:"Owner Created Successfully",
       body:ownerDetail
