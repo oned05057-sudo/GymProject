@@ -9,13 +9,14 @@
 
 
 
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:./dev.db"
 }
 
 //All the fields are in camelCase age and date deleted
@@ -68,7 +69,6 @@ model userSplit {
   id      Int       @id @default(autoincrement())
   userId  String    @unique
   routine Routine[]
-
 }
 
 model Exercise {
@@ -78,8 +78,7 @@ model Exercise {
   equipment String
   description String
   workouts Workout[]
-
-
+  test Test[]
 }
 
 model Workout {
@@ -114,4 +113,13 @@ model Day {
   routineId Int
   routine   Routine   @relation(fields: [routineId], references: [id])
   workouts  Workout[]
+}
+
+model Test{
+  id Int @id @default(autoincrement())
+  userId String @unique 
+  exerciseId Int
+  exercise Exercise @relation(fields: [exerciseId], references:[id])
+  maxWeight Float
+  maxReps Int
 }

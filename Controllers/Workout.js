@@ -125,54 +125,86 @@ async function createUserSplit(req,res){
 
 async function createRoutine(req,res){
 
-    const {name, userId} = req.body;//name -> routine name
+        const { Member, Name, WeekRoutine} = req.body;
 
-    if(!name, !userId){
+        console.log(req.body);
 
-        return res.status(403).json({
-            success: false,
-            message: "All fields are required"
-        })
-    }
+        if(!Member || !Name || !WeekRoutine){
 
-    try{
+            return res.status(403).json({
+                success: false,
+                message: "All fields are required"
+            })
+        }
 
-        const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+        try{
 
-        const daysData = daysOfWeek.map(name => name ?{name} : null)
-                         .filter(Boolean)
-
-        const routine = await prisma.routine.create({
-            data: {
-                name,
-                userId,
-                day: {
-                    create: daysData
+            const routine = await prisma.routine.create({
+                data: {
+                    name: Name,
+                    userId: Member,
+                    routine:{
+                        create:{
+                            name:Name,
+                            day:{
+                                create:WeekRoutine.map((day) => ({
+                                    name: day.day,
+                                    workouts:{
+                                        create: day.workouts.map((workout) => ({
+                                            exercise: {
+                                                connectOrCreate:{
+                                                    where: {name: workout.Exercise},
+                                                    create: {name: workout.Exercise, muscleGroup: 'Unknown', equipment:'Unkown', description:'No description'}
+                                                },
+                                            },
+                                            sets:{
+                                                create: workout.sets.map((set) => ({
+                                                setNo: parseInt(set.setNo),
+                                                weight: parseFloat(set.weight),
+                                                repetitions: parseInt(set.reps),
+                                                }))
+                                            },  
+                                        }))
+                                    },
+                                })),
+                            },
+                        },
+                    },
+                },
+                include:{
+                    split:{
+                        include:{
+                            day:{
+                                include:{
+                                    workouts:{
+                                        include:{
+                                            exercises:true,
+                                            sets: true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-            },
-            include: {
-                day: true
-            }
-        })
+            });
 
-        console.log(routine);
+            return res.status(200).json({
+                success: true,
+                message: "Routine created successfully",
+                data: routine
+            });
 
-        return res.status(200).json({
+        }catch(error){
 
-            success: true,
-            message: "Rotine is created successfully"
-
-        })
-    }catch(error){
-
-        console.log(error);
-
-        return res.status(500).json({
-            success: false,
-            message: "Error while creating the routine"
-        })
+            console.log(error)
+            return res.status(500).json({
+                success: false,
+                message: "Intenal server error while creating Week Routine"
+            })
+        }
     }
-}
+
 
 //========================================= Create the Workout ============================================//
 

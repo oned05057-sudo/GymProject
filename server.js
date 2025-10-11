@@ -9,6 +9,7 @@ import userRouter from "./routes/User.js";
 import  workoutRouter from "./routes/Workout.js";
 import getWorkoutRouter from "./routes/GetWorkout.js";
 import ownerRouter from "./routes/ownerRoute.js";
+import testRouter from "./routes/Test.js";
 
 
 
@@ -40,6 +41,8 @@ app.use("/api/user", userRouter);
 app.use("/api/workout", workoutRouter);
 
 app.use("/api/getWorkout",getWorkoutRouter );
+
+app.use("/api/test",testRouter);
 
 
 
