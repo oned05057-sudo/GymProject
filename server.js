@@ -12,8 +12,8 @@ import ownerRouter from "./routes/ownerRoute.js";
 import testRouter from "./routes/Test.js";
 
 
-
-
+app.use(cors());
+app.use(express.json());
 //  =================================================== Home Route ===================================================//
 
 app.use(
@@ -30,8 +30,8 @@ app.get("/" , (req,res) => {
     res.send("APT Working");
 })
 
-app.use(cors());
-app.use(express.json());
+
+
 
 //  =================================================== Routes ===================================================//
 app.use("/api/owner",ownerRouter);

@@ -118,9 +118,11 @@ model Day {
 
 model Test{
   id Int @id @default(autoincrement())
-  userId String @unique 
+  userId String 
   exerciseId Int
   exercise Exercise @relation(fields: [exerciseId], references:[id])
   maxWeight Float
   maxReps Int
+
+  @@unique([userId,exerciseId])
 }
