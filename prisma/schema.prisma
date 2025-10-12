@@ -62,6 +62,7 @@ model User {
   disciplineStatus  String
   photoUrl          String
   idCardUrl         String
+  testDone          Boolean @default(false)
 }
 
 
