@@ -1,6 +1,6 @@
 import express from 'express'
 
-import { showTest, createTest, retest } from "../Controllers/test"
+import { showTest, createTest, retest } from "../Controllers/test.js"
 
 const testRouter = express.Router();
 
