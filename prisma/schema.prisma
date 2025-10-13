@@ -121,8 +121,8 @@ model Test{
   userId String 
   exerciseId Int
   exercise Exercise @relation(fields: [exerciseId], references:[id])
-  maxWeight Float
-  maxReps Int
+  maxWeight String
+  maxReps String
 
   @@unique([userId,exerciseId])
 }

@@ -297,4 +297,32 @@ async function getAllUsers(req, res) {
   }
 }
 
-export { createUser, getAllUsers };
+async function getSingleUser(req,res) {
+  try{
+    const {enrollmentId}=req.body;
+    const user=await prisma.user.findFirst({
+      where:{enrollmentId:enrollmentId}
+    })
+    if(!user){
+      return res.status(404).json({
+        success:false,
+        message:"No data found"
+      })
+    }
+    return res.status(200).json({
+      success: true,
+      message: "Users fetched successfully",
+      data: user,
+    });
+  }
+  catch(err){
+    console.log(err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error while getting the single User",
+    });
+  }
+}
+
+export { createUser, getAllUsers,getSingleUser };

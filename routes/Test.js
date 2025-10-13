@@ -6,6 +6,6 @@ const testRouter = express.Router();
 
 testRouter.post("/create-test", createTest);
 testRouter.post("/retest", retest);
-testRouter.get("/get-test", showTest);
+testRouter.post("/get-test", showTest);
 
 export default testRouter;

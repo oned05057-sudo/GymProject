@@ -13,7 +13,6 @@ async function createTest(req,res){
             message: "All fields are required"
         });
     }
-
     // Upsert each test entry to avoid unique constraint errors
     for (const test of testEntries) {
         await prisma.test.upsert({
@@ -35,7 +34,6 @@ async function createTest(req,res){
             },
         });
     }
-
     // Update the user's testDone flag to true
     await prisma.user.update({
         where: {
