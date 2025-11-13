@@ -79,7 +79,6 @@ model Exercise {
   equipment String
   description String
   workouts Workout[]
-  test Test[]
 }
 
 model Workout {
@@ -116,13 +115,9 @@ model Day {
   workouts  Workout[]
 }
 
-model Test{
-  id Int @id @default(autoincrement())
-  userId String 
-  exerciseId Int
-  exercise Exercise @relation(fields: [exerciseId], references:[id])
-  maxWeight String
-  maxReps String
-
-  @@unique([userId,exerciseId])
+model Test {
+  id         Int     @id @default(autoincrement())
+  userId     String  @unique     // Each user only one test record
+  maxWeight  String
+  maxReps    String
 }

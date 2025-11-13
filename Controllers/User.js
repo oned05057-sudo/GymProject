@@ -5,6 +5,7 @@ import "dotenv/config";
 
 const prisma = new PrismaClient();
 import Papa from "papaparse";
+import { scryptSync } from "crypto";
 
 //  ================================================== Create New User ==================================================//
 
@@ -325,4 +326,36 @@ async function getSingleUser(req,res) {
   }
 }
 
-export { createUser, getAllUsers,getSingleUser };
+const updateMemberDetail=async(req,res)=>{
+  try{
+    const userId=req.body.userId;
+    const data=req.body.data;
+    if(!userId || !data){
+      return res.status(402).json({
+        success:false,
+        data:"All fields are required"
+      })
+    }
+    const parsedData=JSON.parse(data);
+    const response=await prisma.user.update({
+      where: { enrollmentId:userId },
+      data: {
+        ...parsedData
+      }
+    });
+
+    return res.status(200).json({
+      success:true,
+      message:"Data is updated"
+    })
+
+  }
+  catch(err){
+    return res.status(500).json({
+      success:false,
+      message:"Some error in updating data"
+    })
+  }
+}
+
+export { createUser, getAllUsers,getSingleUser,updateMemberDetail };
