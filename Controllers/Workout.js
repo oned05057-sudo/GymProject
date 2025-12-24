@@ -123,87 +123,211 @@ async function createUserSplit(req,res){
 
 //========================================= Create Routine ==================================================//
 
-async function createRoutine(req,res){
+// async function createRoutine(req,res){
+//     try{
+//         console.log("I am here");
+//         const { enrollmentId, Name, WeekRoutine} = req.body;
 
-        const { Member, Name, WeekRoutine} = req.body;
+//         console.log(req.body);
 
-        console.log(req.body);
+//         if(!enrollmentId || !Name || !WeekRoutine){
 
-        if(!Member || !Name || !WeekRoutine){
+//             return res.status(403).json({
+//                 success: false,
+//                 message: "All fields are required"
+//             })
+//         }
+//         // Find or create userSplit using enrollmentId
+//         const split = await prisma.userSplit.upsert({
+//                         where: { userId: enrollmentId },   // enrollmentId
+//                         update: {},
+//                         create: { userId: enrollmentId }
+//                         });
+//         let parsedWeekRoutine = JSON.parse(WeekRoutine);
+//         const routine = await prisma.routine.create({
+//             data: {
+//                 name: Name,
+//                 userId: split.id,
+//                 routine:{
+//                     create:{
+//                         name:Name,
+//                         day:{
+//                             create:parsedWeekRoutine.map((day) => ({
+//                                 name: day.day,
+//                                 workouts:{
+//                                     create: day.workouts.map((workout) => ({
+//                                         exercise: {
+//                                             connectOrCreate:{
+//                                                 where: {name: workout.Exercise},
+//                                                 create: {name: workout.Exercise, muscleGroup: 'Unknown', equipment:'Unkown', description:'No description'}
+//                                             },
+//                                         },
+//                                         sets:{
+//                                             create: workout.sets.map((set) => ({
+//                                             setNo: parseInt(set.setNo),
+//                                             weight: parseFloat(set.weight),
+//                                             repetitions: parseInt(set.reps),
+//                                             }))
+//                                         },  
+//                                     }))
+//                                 },
+//                             })),
+//                         },
+//                     },
+//                 },
+//             },
+//             include:{
+//                 split:{
+//                     include:{
+//                         day:{
+//                             include:{
+//                                 workouts:{
+//                                     include:{
+//                                         exercises:true,
+//                                         sets: true
+//                                     }
+//                                 }
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         });
 
-            return res.status(403).json({
-                success: false,
-                message: "All fields are required"
-            })
-        }
+//         return res.status(200).json({
+//             success: true,
+//             message: "Routine created successfully",
+//             data: routine
+//         });
 
-        try{
+//     }catch(error){
 
-            const routine = await prisma.routine.create({
-                data: {
-                    name: Name,
-                    userId: Member,
-                    routine:{
-                        create:{
-                            name:Name,
-                            day:{
-                                create:WeekRoutine.map((day) => ({
-                                    name: day.day,
-                                    workouts:{
-                                        create: day.workouts.map((workout) => ({
-                                            exercise: {
-                                                connectOrCreate:{
-                                                    where: {name: workout.Exercise},
-                                                    create: {name: workout.Exercise, muscleGroup: 'Unknown', equipment:'Unkown', description:'No description'}
-                                                },
-                                            },
-                                            sets:{
-                                                create: workout.sets.map((set) => ({
-                                                setNo: parseInt(set.setNo),
-                                                weight: parseFloat(set.weight),
-                                                repetitions: parseInt(set.reps),
-                                                }))
-                                            },  
-                                        }))
-                                    },
-                                })),
-                            },
-                        },
-                    },
-                },
-                include:{
-                    split:{
-                        include:{
-                            day:{
-                                include:{
-                                    workouts:{
-                                        include:{
-                                            exercises:true,
-                                            sets: true
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            });
+//         console.log(error)
+//         return res.status(500).json({
+//             success: false,
+//             message: "Intenal server error while creating Week Routine"
+//         })
+//     }
+// }
 
-            return res.status(200).json({
-                success: true,
-                message: "Routine created successfully",
-                data: routine
-            });
+async function createRoutine(req, res) {
+  const { enrollmentId, Name, WeekRoutine } = req.body;
 
-        }catch(error){
+  if (!enrollmentId || !Name || !WeekRoutine) {
+    return res.status(400).json({
+      success: false,
+      message: "enrollmentId, Name and WeekRoutine are required"
+    });
+  }
 
-            console.log(error)
-            return res.status(500).json({
-                success: false,
-                message: "Intenal server error while creating Week Routine"
-            })
-        }
+  // 1️Parse WeekRoutine
+  let parsedWeekRoutine;
+  try {
+    parsedWeekRoutine = JSON.parse(WeekRoutine);
+  } catch {
+    return res.status(400).json({
+      success: false,
+      message: "WeekRoutine must be valid JSON"
+    });
+  }
+
+  try {
+    // 2️⃣ Get userSplit
+    const split = await prisma.userSplit.upsert({
+      where: { userId: enrollmentId }, // enrollmentId
+      update: {},
+      create: { userId: enrollmentId }
+    });
+
+    // Check if routine already exists
+    const existingRoutine = await prisma.routine.findFirst({
+      where: { userId: split.id },
+      orderBy: { id: "desc" }
+    });
+    
+    //Delete existing routine (CASCADE handles rest)
+    if (existingRoutine) {
+      await prisma.routine.delete({
+        where: { id: existingRoutine.id }
+      });
     }
+
+
+
+    // 3️⃣ Create routine (CONNECT exercises only)
+    const routine = await prisma.routine.create({
+      data: {
+        name: Name,
+        userId: split.id,
+
+        day: {
+          create: parsedWeekRoutine.map(day => ({
+            name: day.day,
+
+            workouts: {
+              create: day.workouts.map(workout => ({
+                exercise: {
+                  connect: {
+                    id: Number(workout.exerciseId)
+                  }
+                },
+
+                sets: {
+                  create: workout.sets.map(set => ({
+                    setNo: Number(set.setNo),
+                    weight:
+                      set.weight === "" || set.weight == null
+                        ? 0
+                        : Number(set.weight),
+                    repetitions:
+                      set.reps === "" || set.reps == null
+                        ? 0
+                        : Number(set.reps)
+                  }))
+                }
+              }))
+            }
+          }))
+        }
+      },
+
+      include: {
+        day: {
+          include: {
+            workouts: {
+              include: {
+                exercise: true,
+                sets: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Routine created successfully",
+      data: routine
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    // Prisma error when exerciseId does not exist
+    if (error.code === "P2025") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid exerciseId provided"
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+}
 
 
 //========================================= Create the Workout ============================================//

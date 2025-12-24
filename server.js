@@ -13,13 +13,10 @@ import testRouter from "./routes/Test.js";
 
 
 app.use(cors({
-  origin: [
-    'http://localhost:5173',          // your local frontend
-    /\.ngrok-free\.app$/              // ✅ allow all ngrok subdomains
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  credentials: true                  // allow cookies/auth headers if needed
+  origin: true,
+  credentials: true
 }));
+
 app.use(express.json());
 //  =================================================== Home Route ===================================================//
 

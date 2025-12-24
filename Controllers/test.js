@@ -13,29 +13,6 @@ async function createTest(req,res){
                 message: "All fields are required"
             });
         }
-        //We need to delete any entry if exist 
-        // Upsert each test entry to avoid unique constraint errors
-        // for (const test of testEntries) {
-        //     await prisma.test.upsert({
-        //         where: {
-        //             userId_exerciseId: {
-        //                 userId,
-        //                 exerciseId: test.exerciseId,
-        //             },
-        //         },
-        //         update: {
-        //             maxWeight: test.maxWeight,
-        //             maxReps: test.maxReps,
-        //         },
-        //         create: {
-        //             userId,
-        //             exerciseId: test.exerciseId,
-        //             maxWeight: test.maxWeight,
-        //             maxReps: test.maxReps,
-        //         },
-        //     });
-        // }
-
         await prisma.test.upsert({
             where: { userId }, // since userId is unique
             update: {

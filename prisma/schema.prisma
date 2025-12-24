@@ -16,7 +16,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
+  url = "file:./dev.db"
 }
 
 //All the fields are in camelCase age and date deleted
@@ -85,7 +85,7 @@ model Workout {
   id         Int      @id @default(autoincrement())
   dayId      Int
   exerciseId Int
-  day        Day      @relation(fields: [dayId], references: [id])
+  day        Day      @relation(fields: [dayId], references: [id],onDelete: Cascade)
   exercise   Exercise @relation(fields: [exerciseId], references: [id])
   sets       Set[]
 }
@@ -96,13 +96,14 @@ model Set {
   workoutId   Int
   weight      Float
   repetitions Int
-  workout     Workout @relation(fields: [workoutId], references: [id])
+  workout     Workout @relation(fields: [workoutId], references: [id],onDelete: Cascade)
 }
 
 model Routine {
   id     Int       @id @default(autoincrement())
   name   String
   userId Int 
+  // NOTE: userId here refers to userSplit.id, NOT actual userId
   split  userSplit @relation(fields: [userId], references: [id])
   day    Day[]
 }
@@ -111,7 +112,7 @@ model Day {
   id        Int       @id @default(autoincrement())
   name      String
   routineId Int
-  routine   Routine   @relation(fields: [routineId], references: [id])
+  routine   Routine   @relation(fields: [routineId], references: [id],onDelete: Cascade)
   workouts  Workout[]
 }
 
