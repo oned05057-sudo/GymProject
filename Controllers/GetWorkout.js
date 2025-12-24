@@ -97,7 +97,7 @@ async function getAllRoutine(req, res) {
       data: routine,
     });
   } catch (err) {
-    console.log(error);
+    // console.log(err);
 
     return res.status(500).json({
       success: false,
@@ -108,6 +108,84 @@ async function getAllRoutine(req, res) {
 
 //TODO
 //Write a function in which this gives all the users active routine means all the users latest active routines
+async function getAllMemRoutine(req, res) {
+  try {
+    // Include split.userId so we can resolve the actual User (by enrollmentId)
+    const routines = await prisma.routine.findMany({
+      include: {
+        split: {
+          select: {
+            userId: true,
+          },
+        },
+        day: {
+          include: {
+            workouts: {
+              include: {
+                exercise: {
+                  select: {
+                    name: true,
+                    muscleGroup: true,
+                  },
+                },
+                sets: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!routines || routines.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No members have routines",
+      });
+    }
+
+    // Collect all enrollmentIds from the userSplit records
+    const enrollmentIds = Array.from(
+      new Set(routines.map((r) => r.split && r.split.userId).filter(Boolean))
+    );
+
+    // Fetch all corresponding users in one go
+    const users = await prisma.user.findMany({
+      where: {
+        enrollmentId: {
+          in: enrollmentIds,
+        },
+      },
+      select: {
+        enrollmentId: true,
+        name: true,
+      },
+    });
+
+    const userMap = Object.fromEntries(users.map((u) => [u.enrollmentId, u]));
+
+    // Attach a `member` object to each routine (contains enrollmentId and name)
+    const routinesWithMember = routines.map((r) => {
+      const enrollmentId = r.split ? r.split.userId : null;
+      const member = enrollmentId ? userMap[enrollmentId] || { enrollmentId } : null;
+      return {
+        ...r,
+        member,
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: routinesWithMember,
+      message: "Routines fetched successfully with member info",
+    });
+  } catch (err) {
+    console.log("This is the error : ", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error while fetching User",
+    });
+  }
+}
 
 //================================================================ Users without routine ==========================================//
 
@@ -145,4 +223,4 @@ async function isRoutine(req, res) {
   }
 }
 
-export { getLatestRoutine, getAllRoutine, isRoutine };
+export { getLatestRoutine, getAllRoutine, isRoutine,getAllMemRoutine };
